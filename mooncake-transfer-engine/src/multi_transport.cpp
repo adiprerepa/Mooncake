@@ -186,10 +186,12 @@ Transport *MultiTransport::installTransport(const std::string &proto,
                                             std::shared_ptr<Topology> topo) {
     Transport *transport = nullptr;
     if (std::string(proto) == "rdma") {
+        LOG(INFO) << "ADITYA installTransport: rdma";
         transport = new RdmaTransport();
     }
 #ifdef USE_TCP
     else if (std::string(proto) == "tcp") {
+        LOG(INFO) << "ADITYA installTransport: tcp";
         transport = new TcpTransport();
     }
 #endif
@@ -205,6 +207,7 @@ Transport *MultiTransport::installTransport(const std::string &proto,
 #endif
 #ifdef USE_MNNVL
     else if (std::string(proto) == "nvlink") {
+        LOG(INFO) << "ADITYA installTransport: nvlink";
         transport = new NvlinkTransport();
     }
 #endif

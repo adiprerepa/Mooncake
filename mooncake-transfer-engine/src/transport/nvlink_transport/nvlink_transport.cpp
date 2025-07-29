@@ -214,6 +214,7 @@ std::string serializeBinaryData(const void *data, size_t length) {
     if (!data) {
         throw std::invalid_argument("Data pointer cannot be null");
     }
+    LOG(INFO) << "ADITYA serializeBinaryData length: " << length;
 
     std::string hexString;
     hexString.reserve(length * 2);
@@ -232,6 +233,7 @@ void deserializeBinaryData(const std::string &hexString,
     if (hexString.length() % 2 != 0) {
         throw std::invalid_argument("Input string length must be even");
     }
+    LOG(INFO) << "ADITYA deserializeBinaryData: " << hexString;
 
     buffer.clear();
     buffer.reserve(hexString.length() / 2);
@@ -251,6 +253,7 @@ int NvlinkTransport::registerLocalMemory(void *addr, size_t length,
     if (globalConfig().trace) {
         LOG(INFO) << "register memory: addr " << addr << ", length " << length;
     }
+    LOG(INFO) << "ADITYA registerLocalMemory: " << addr << " " << length << " " << location << " " << remote_accessible << " " << update_metadata;
     if (!use_fabric_mem_) {
         cudaPointerAttributes attr;
         cudaError_t err = cudaPointerGetAttributes(&attr, addr);
@@ -324,12 +327,14 @@ int NvlinkTransport::registerLocalMemory(void *addr, size_t length,
 }
 
 int NvlinkTransport::unregisterLocalMemory(void *addr, bool update_metadata) {
+    LOG(INFO) << "ADITYA unregisterLocalMemory: " << addr << " " << update_metadata;
     return metadata_->removeLocalMemoryBuffer(addr, update_metadata);
 }
 
 int NvlinkTransport::relocateSharedMemoryAddress(uint64_t &dest_addr,
                                                  uint64_t length,
                                                  uint64_t target_id) {
+    LOG(INFO) << "ADITYA relocateSharedMemoryAddress: " << dest_addr << " " << length << " " << target_id;
     auto desc = metadata_->getSegmentDescByID(target_id);
     int index = 0;
     for (auto &entry : desc->buffers) {
@@ -362,7 +367,7 @@ int NvlinkTransport::relocateSharedMemoryAddress(uint64_t &dest_addr,
                     }
                     OpenedShmEntry shm_entry;
                     shm_entry.shm_addr = shm_addr;
-                    shm_entry.length = length;
+                    shm_entry.length = entry.length;
                     remap_entries_[std::make_pair(target_id, entry.addr)] = shm_entry;
                 } else if (output_buffer.size() == sizeof(CUmemFabricHandle) &&
                            use_fabric_mem_) {

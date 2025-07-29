@@ -153,37 +153,31 @@ int TransferEngine::init(const std::string &metadata_conn_string,
         LOG(INFO) << "Topology discovery complete. Found "
                   << local_topology_->getHcaList().size() << " HCAs.";
 
-#ifdef USE_MNNVL
-        if (local_topology_->getHcaList().size() > 0 &&
-            !getenv("MC_FORCE_MNNVL")) {
-            Transport* rdma_transport = multi_transports_->installTransport("rdma", local_topology_);
-            if (!rdma_transport) {
-                LOG(ERROR) << "Failed to install RDMA transport";
+        if (getenv("MC_FORCE_TCP")) {
+            Transport* tcp_transport = multi_transports_->installTransport("tcp", local_topology_);
+            if (!tcp_transport) {
+                LOG(ERROR) << "Failed to install TCP transport";
                 return -1;
+            } else {
+                LOG(INFO) << "ADITYA installTransport: tcp";
             }
-        } else {
+        } else if (getenv("MC_FORCE_MNNVL")) {
             Transport* nvlink_transport = multi_transports_->installTransport("nvlink", nullptr);
             if (!nvlink_transport) {
                 LOG(ERROR) << "Failed to install NVLink transport";
                 return -1;
+            } else {
+                LOG(INFO) << "ADITYA installTransport: nvlink";
             }
-        }
-#else
-        if (local_topology_->getHcaList().size() > 0) {
-            // only install RDMA transport when there is at least one HCA
+        } else {
             Transport* rdma_transport = multi_transports_->installTransport("rdma", local_topology_);
             if (!rdma_transport) {
                 LOG(ERROR) << "Failed to install RDMA transport";
                 return -1;
-            }
-        } else {
-            Transport* tcp_transport = multi_transports_->installTransport("tcp", nullptr);
-            if (!tcp_transport) {
-                LOG(ERROR) << "Failed to install TCP transport";
-                return -1;
+            } else {
+                LOG(INFO) << "ADITYA installTransport: rdma";
             }
         }
-#endif
         // TODO: install other transports automatically
     }
 #endif
@@ -202,6 +196,7 @@ int TransferEngine::freeEngine() {
 // Only for testing
 Transport *TransferEngine::installTransport(const std::string &proto,
                                             void **args) {
+    LOG(INFO) << "ADITYA installTransport: " << proto;
     Transport *transport = multi_transports_->getTransport(proto);
     if (transport) {
         LOG(WARNING) << "Transport " << proto << " already installed";
